@@ -1,26 +1,57 @@
 const fs = require('fs');
-const split = require('split-string-words');
-const splitToWords = require('split-to-words');
 
+const getText = (fs, files) => {
+  let text='';
+  files.forEach((file) => {
+    text+=fs.readFileSync(`${file}`).toString();
+  });
+  return text;
+}
 
-let text = fs.readFileSync('./text1').toString();
-text += fs.readFileSync('./text2').toString();
-text += fs.readFileSync('./text3').toString();
-text += fs.readFileSync('./text4').toString();
+const writeToFile = (fs, what, where) => {
+  fs.writeFileSync(`${where}`, JSON.stringify(what, null, 2));
+}
 
-const arr = splitToWords(text);
+const getWordsAndFreqObj = (text) => {
+  const arr = text.replace(/[\n\r]/g, " ").split(' ');
 
-const result = {};
+  const result = {};
 
-arr.forEach((item) => {
-  const world = item.toLowerCase();
-  result[world] = result[world] + 1 || 1;
-})
+  arr.forEach((item) => {
+    const letters = item.split('');
+    let start = 0, end = 0;
 
-console.log(arr.length);
+    for (let i = 0; i < letters.length; i++) {
+      if ('A' <= letters[i] && letters[i] <= 'Z' || 'a' <= letters[i] && letters[i] <= 'z')
+        break;
+      start++;
+    }
+    for (let i = letters.length; i > 0; i--) {
+      if ('A' <= letters[i] && letters[i] <= 'Z' || 'a' <= letters[i] && letters[i] <= 'z')
+        break;
+      end++;
+    }
+    const word = letters.join('').substr(start, letters.length - start - end + 1).toLowerCase().trim();
+    if (word)
+      result[word] = result[word] + 1 || 1;
+  })
 
-Object.keys(result).sort().forEach((i) => console.log(i, result[i]));
+  return result;
+}
 
+const getSortedWords = (result,boolean = 1) => {
+  const sorted = [];
+  Object.keys(result).sort(() => boolean).forEach((i) => sorted.push({word: i, freq: result[i]}));
+  return sorted;
+}
 
+const getSortedWordsByFreq = (result, boolean = 1) => {
+  const sortedFreq = [];
+  Object.entries(result).sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push({word: i[0], freq: i[1]}) );
+  return sortedFreq;
+}
 
-
+const text = getText(fs, ['./text1.txt']);
+const result = getWordsAndFreqObj(text);
+const sortedFreq = getSortedWordsByFreq(result);
+writeToFile(fs, sortedFreq, './result.txt');
