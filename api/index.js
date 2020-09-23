@@ -1,7 +1,9 @@
-import React from 'react';
-import './App.css';
+const koa = require('koa');
+const bodyParser = require('koa-bodyparser');
+const Router = require('koa-router');
+const fs = require('fs');
+const cors = require('@koa/cors');
 
-import fs from 'fs';
 
 const getText = (fs, files) => {
   let text='';
@@ -10,11 +12,9 @@ const getText = (fs, files) => {
   });
   return text;
 }
-
 const writeToFile = (fs, what, where) => {
   fs.writeFileSync(`${where}`, JSON.stringify(what, null, 2));
 }
-
 const getWordsAndFreqObj = (text) => {
   const arr = text.replace(/[\n\r]/g, " ").split(' ');
 
@@ -42,31 +42,42 @@ const getWordsAndFreqObj = (text) => {
   return result;
 }
 
+const start = (fs) => {
+  const text = getText(fs, ['texts/text1.txt']);
+  const result = getWordsAndFreqObj(text);
+  writeToFile(fs, result, 'texts/result.txt');
+}
+
 const getSortedWords = (result,boolean = 1) => {
   const sorted = [];
   Object.keys(result).sort(() => boolean).forEach((i) => sorted.push({word: i, freq: result[i]}));
   return sorted;
 }
-
 const getSortedWordsByFreq = (result, boolean = 1) => {
   const sortedFreq = [];
   Object.entries(result).sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push({word: i[0], freq: i[1]}) );
   return sortedFreq;
 }
 
-const text = getText(fs, ['../texts/text1.txt']);
-const result = getWordsAndFreqObj(text);
-const sortedFreq = getSortedWordsByFreq(result);
-writeToFile(fs, sortedFreq, '../texts/result.txt');
+const app = new koa();
+app.use(cors());
+const router = new Router();
 
-function App() {
-  return (
-    <ul>
-      {sortedFreq.map((i) => {
-        return <li>{i.word}</li>
-      })}
-    </ul>
-  );
-}
+router
+  .get('/result', (ctx) => {
+    start(fs);
+    ctx.body = JSON.parse(fs.readFileSync('texts/result.txt'));
+  })
+  .get('/words', (ctx) => {
+    start(fs);
+    ctx.body = JSON.parse(fs.readFileSync('texts/result.txt'));
+  })
 
-export default App;
+
+app.use(bodyParser());
+
+app
+  .use(router.routes())
+  .use(router.allowedMethods());
+
+app.listen(3000);
