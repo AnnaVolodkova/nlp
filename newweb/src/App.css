@@ -1,0 +1,33 @@
+.words {
+  width: 500px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid gray;
+
+  list-style-type: none;
+  overflow: auto;
+}
+
+.word {
+  border-bottom: 1px solid gray;
+
+  display: flex;
+}
+
+.block {
+  width: 250px;
+  padding: 6px;
+  border-left: 1px solid gray;
+}
+
+.sort {
+  width: 250px;
+  padding: 6px;
+  border-left: 1px solid gray;
+}
+
+.sort:hover {
+  cursor: pointer;
+  background-color: lightblue;
+}
+

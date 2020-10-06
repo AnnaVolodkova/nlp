@@ -1,44 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 
-import { getAll } from './resources/resources';
+import * as helpers from './resources/helpers';
+import {getResult} from './resources/resources';
 
 import './App.css';
 
-const getSortedWords = (result, boolean = 1) => {
-  const sorted = [];
-  Object.keys(result).sort(() => boolean).forEach((i) => sorted.push({word: i, freq: result[i]}));
-  return sorted;
-}
-const getSortedWordsByFreq = (result, boolean = 1) => {
-  const sortedFreq = [];
-  Object.entries(result).sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push({
-    word: i[0],
-    freq: i[1]
-  }));
-  return sortedFreq;
-}
-
 function App() {
-  const [sortedWordsFreq, setSortedWordsFreq] = useState([]);
-  const [sortedWords, setSortedWords] = useState([]);
+  const [result, setResult] = useState({});
+  const [words, setWords] = useState([]);
+  const [wordOrder, setWordOrder] = useState(1);
+  const [freqOrder, setFreqOrder] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(async () => {
-    const result = await getAll();
-    console.log('result', result.data);
-    setSortedWordsFreq(getSortedWordsByFreq(result.data));
-    setSortedWords(getSortedWords(result.data));
+    setLoading(true);
+    const fetchedResult = await getResult();
+    setResult(fetchedResult.data);
+    const words = helpers.getSortedWordsByFreq(fetchedResult.data, freqOrder);
+    console.log(fetchedResult.data, words)
+    setWords(words);
+    setLoading(false);
   }, []);
+
+  const sortByFreq =  () => {
+    setFreqOrder(freqOrder === 1 ? 0 : 1);
+    setWords(helpers.getSortedWordsByFreq(result, freqOrder));
+  };
+
+  const sortByWord =  () => {
+    setWordOrder(wordOrder === 1 ? -1 : 1);
+    setWords(helpers.getSortedWords(result, wordOrder));
+  }
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
-      <div>Hello</div>
-      <ul>
-        {sortedWordsFreq.length &&
-          sortedWordsFreq.map((i) => {
-            return (<li>{i}</li>);
-          })
-        }
-      </ul>
+      {!loading &&
+      <>
+        <div>Unique words amount {words.length}</div>
+        <ul className='words'>
+          <div className='word'>
+            <div className='sort' onClick={sortByWord}><b>Word</b></div>
+            <div className='sort' onClick={sortByFreq}><b>Frequency</b></div>
+          </div>
+          {words.map(word => {
+            return (
+              <li className='word'>
+                <div className='block'>{word.word}</div>
+                <div className='block'>{word.freq}</div>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+      }
     </>
   );
 }

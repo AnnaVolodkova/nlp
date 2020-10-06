@@ -4,7 +4,6 @@ const Router = require('koa-router');
 const fs = require('fs');
 const cors = require('@koa/cors');
 
-
 const getText = (fs, files) => {
   let text='';
   files.forEach((file) => {
@@ -12,6 +11,7 @@ const getText = (fs, files) => {
   });
   return text;
 }
+
 const writeToFile = (fs, what, where) => {
   fs.writeFileSync(`${where}`, JSON.stringify(what, null, 2));
 }
@@ -43,20 +43,9 @@ const getWordsAndFreqObj = (text) => {
 }
 
 const start = (fs) => {
-  const text = getText(fs, ['texts/text1.txt']);
+  const text = getText(fs, ['texts/text1.txt', 'texts/text2.txt', 'texts/text3.txt', 'texts/text4.txt', 'texts/text5.txt']);
   const result = getWordsAndFreqObj(text);
-  writeToFile(fs, result, 'texts/result.txt');
-}
-
-const getSortedWords = (result,boolean = 1) => {
-  const sorted = [];
-  Object.keys(result).sort(() => boolean).forEach((i) => sorted.push({word: i, freq: result[i]}));
-  return sorted;
-}
-const getSortedWordsByFreq = (result, boolean = 1) => {
-  const sortedFreq = [];
-  Object.entries(result).sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push({word: i[0], freq: i[1]}) );
-  return sortedFreq;
+  return result;
 }
 
 const app = new koa();
@@ -65,12 +54,8 @@ const router = new Router();
 
 router
   .get('/result', (ctx) => {
-    start(fs);
-    ctx.body = JSON.parse(fs.readFileSync('texts/result.txt'));
-  })
-  .get('/words', (ctx) => {
-    start(fs);
-    ctx.body = JSON.parse(fs.readFileSync('texts/result.txt'));
+    const result = start(fs);
+    ctx.body = result;
   })
 
 
