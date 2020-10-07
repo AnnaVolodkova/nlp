@@ -1,3 +1,14 @@
+.container {
+  display: flex;
+}
+
+.column {
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
 .words {
   width: 500px;
   margin: 0;
@@ -29,5 +40,10 @@
 .sort:hover {
   cursor: pointer;
   background-color: lightblue;
+}
+
+.textarea {
+  width: 500px;
+  height: 100vh;
 }
 

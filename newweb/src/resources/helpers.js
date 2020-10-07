@@ -4,7 +4,6 @@ export const getSortedWords = (result, boolean = 1) => {
     word: i,
     freq: result[i]
   }));
-  console.log('sorted', boolean, sorted);
   return sorted;
 }
 
@@ -14,6 +13,32 @@ export const getSortedWordsByFreq = (result, boolean = 1) => {
     word: i[0],
     freq: i[1]
   }));
-  console.log('sortedFreq', boolean, sortedFreq);
   return sortedFreq;
 };
+
+export const getWordsAndFreqObj = (text) => {
+  const arr = text.replace(/[\n\r]/g, " ").split(' ');
+
+  const result = {};
+
+  arr.forEach((item) => {
+    const letters = item.split('');
+    let start = 0, end = 0;
+
+    for (let i = 0; i < letters.length; i++) {
+      if ('A' <= letters[i] && letters[i] <= 'Z' || 'a' <= letters[i] && letters[i] <= 'z')
+        break;
+      start++;
+    }
+    for (let i = letters.length; i > 0; i--) {
+      if ('A' <= letters[i] && letters[i] <= 'Z' || 'a' <= letters[i] && letters[i] <= 'z')
+        break;
+      end++;
+    }
+    const word = letters.join('').substr(start, letters.length - start - end + 1).toLowerCase().trim();
+    if (word)
+      result[word] = result[word] + 1 || 1;
+  })
+
+  return result;
+}
