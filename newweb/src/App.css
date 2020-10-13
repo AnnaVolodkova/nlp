@@ -31,6 +31,15 @@
   border-left: 1px solid gray;
 }
 
+.block_icon {
+  width: 250px;
+  padding: 6px;
+  border-left: 1px solid gray;
+
+  display: flex;
+  justify-content: center;
+}
+
 .sort {
   width: 250px;
   padding: 6px;
@@ -39,11 +48,15 @@
 
 .sort:hover {
   cursor: pointer;
-  background-color: lightblue;
+  background-color: rgb(3, 182, 252);
 }
 
 .textarea {
   width: 500px;
   height: 100vh;
+}
+
+input {
+  outline: none;
 }
 

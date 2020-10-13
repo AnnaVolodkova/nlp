@@ -16,6 +16,12 @@ export const getSortedWordsByFreq = (result, boolean = 1) => {
   return sortedFreq;
 };
 
+export const getText = (texts) => {
+  let text = '';
+  texts.forEach(i => text += i);
+  return text;
+}
+
 export const getWordsAndFreqObj = (text) => {
   const arr = text.replace(/[\n\r]/g, " ").split(' ');
 

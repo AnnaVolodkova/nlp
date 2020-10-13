@@ -43,7 +43,11 @@ const getWordsAndFreqObj = (text) => {
 }
 
 const start = (fs) => {
-  const text = getText(fs, ['texts/1.txt', 'texts/2.txt', 'texts/3.txt', 'texts/4.txt', 'texts/5.txt']);
+  const texts =[];
+  for (let i=1; i<6; i++) {
+   texts.push(`texts/${i}.txt`);
+  }
+  const text = getText(fs, texts);
   const result = getWordsAndFreqObj(text);
   return result;
 }
@@ -58,7 +62,10 @@ router
     ctx.body = result;
   })
   .get('/texts', (ctx) => {
-    const texts = [fs.readFileSync('texts/1.txt').toString(), fs.readFileSync('texts/2.txt').toString(), fs.readFileSync('texts/3.txt').toString(), fs.readFileSync('texts/4.txt').toString(), fs.readFileSync('texts/5.txt').toString()]
+    const texts =[];
+    for (let i=1; i<6; i++) {
+      texts.push(fs.readFileSync(`texts/${i}.txt`).toString());
+    }
     ctx.body = texts;
   })
 
