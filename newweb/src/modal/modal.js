@@ -8,17 +8,13 @@ export default function ModalWindow(props) {
     <Modal
       isOpen={props.isOpen}
       onRequestClose={props.onRequestClose}
-      // style="modal"
       ariaHideApp
       shouldFocusAfterRender
       shouldCloseOnOverlayClick
       shouldCloseOnEsc
-      // overlayClassName={styles.overlay}
-      className="modal"
-      // style={{width: '200px'}}
+      className={props.className}
     >
-      <h1>{props.title}</h1>
-      <p>{props.description}</p>
+      <h3>{props.title}</h3>
       {props.children}
     </Modal>
   );

@@ -48,7 +48,7 @@
 
 .sort:hover {
   cursor: pointer;
-  background-color: rgb(3, 182, 252);
+  background-color: lightblue;
 }
 
 .textarea {
@@ -58,5 +58,42 @@
 
 input {
   outline: none;
+}
+
+.save {
+  padding: 6px 10px;
+  border: 1px solid gray;
+
+  background-color: lightblue;
+
+  outline: none;
+}
+
+.save:hover {
+  cursor: pointer;
+}
+
+
+.delete-modal {
+  padding: 8px 20px;
+  border: 1px solid lightblue;
+
+  position: absolute;
+  top: 200px;
+  right: 600px;
+  left: 600px;
+  bottom: 600px;
+  display: flex;
+  flex-direction: column;
+
+  background-color: white;
+
+  overflow: auto;
+  border-radius: 4px;
+  outline: none;
+}
+
+.marginBottom {
+  margin-bottom: 10px;
 }
 

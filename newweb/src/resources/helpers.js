@@ -1,20 +1,18 @@
-export const getSortedWords = (result, boolean = 1) => {
+export const getSortedWords = (words, boolean = 1) => {
   const sorted = [];
-  Object.keys(result).sort((a, b) => (a !== b) ? (a < b) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sorted.push({
-    word: i,
-    freq: result[i]
-  }));
+  words.sort((a, b) => (a[0] !== b[0]) ? (a[0] < b[0]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sorted.push(i));
   return sorted;
 }
 
-export const getSortedWordsByFreq = (result, boolean = 1) => {
+export const getSortedWordsByFreq = (words, boolean = 1) => {
   const sortedFreq = [];
-  Object.entries(result).sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push({
-    word: i[0],
-    freq: i[1]
-  }));
+  words.sort((a, b) => boolean ? (b[1] - a[1]) : (a[1] - b[1])).forEach((i) => sortedFreq.push(i));
   return sortedFreq;
 };
+
+export const _getWords = (result) => {
+  return  Object.entries(result);
+}
 
 export const getText = (texts) => {
   let text = '';
@@ -22,7 +20,7 @@ export const getText = (texts) => {
   return text;
 }
 
-export const getWordsAndFreqObj = (text) => {
+export const getWords = (text) => {
   const arr = text.replace(/[\n\r]/g, " ").split(' ');
 
   const result = {};
@@ -46,5 +44,6 @@ export const getWordsAndFreqObj = (text) => {
       result[word] = result[word] + 1 || 1;
   })
 
-  return result;
+  return _getWords(result);
 }
+
