@@ -22,8 +22,7 @@ function App() {
   const [popup, setPopup] = useState('');
 
   const [selectedWord, setSelectedWord] = useState('');
-
-
+  const [newWord, setNewWord] = useState('')
 
   useEffect(async () => {
     setLoading(true);
@@ -38,20 +37,24 @@ function App() {
 
 
   const sortByFreq = () => {
-    setFreqOrder(freqOrder === 1 ? 0 : 1);
     setWords(helpers.getSortedWordsByFreq(words, freqOrder));
+    setFreqOrder(freqOrder === 1 ? 0 : 1);
+
   };
 
   const sortByWord = () => {
-    setWordOrder(wordOrder === 1 ? -1 : 1);
     setWords(helpers.getSortedWords(words, wordOrder));
+    setWordOrder(wordOrder === 1 ? -1 : 1);
+  }
+
+  const onReload = async () => {
+    setLoading(true);
+    setWords(helpers.getWords(helpers.getText(texts)));
+    setLoading(false);
   }
 
   const onSave = async () => {
-    setLoading(true);
     setTexts(texts.map((item, index) => index === selectedText ? text : item));
-    setWords(helpers.getWords(helpers.getText(texts)));
-    setLoading(false);
   }
 
   const onTextChange = (e) => {
@@ -70,13 +73,31 @@ function App() {
 
   const deleteWord = () => {
     setWords(words.filter(i => i[0] !== selectedWord));
-    setSelectedWord('');
-    setPopup('');
+    onClose();
+  }
+
+  const updateWord = (was, will) => {
+    const oldWord = helpers.getWord(was, words);
+    const newWords = words.filter(i => i[0] !== was);
+    const newWord = helpers.getWord(will, words);
+    if (newWord) {
+      const buf = newWords.filter(i => i[0] !== will);
+      buf.push([will, oldWord[1] + newWord[1]]);
+      console.log([will, oldWord[1] + newWord[1]], oldWord, newWord);
+      setWords(buf);
+    } else {
+      console.log('hahah')
+      setWords([...newWords, [will, oldWord[1]]]);
+    }
+    onClose();
   }
 
   const onAdd = () => {
     setPopup('add');
-    console.log('click');
+  };
+
+  const onEdit = () => {
+    setPopup('edit');
   };
 
   const onDelete = () => {
@@ -84,6 +105,8 @@ function App() {
   };
 
   const onClose = () => {
+    setSelectedWord('');
+    setNewWord('')
     setPopup('');
   }
 
@@ -100,8 +123,34 @@ function App() {
             onRequestClose={onClose}
             className="delete-modal"
           >
-            <input value={selectedWord || ''} onChange={(e) => setSelectedWord(e.target.value)} className="marginBottom" />
+            <input
+              value={selectedWord || ''}
+              onChange={(e) => setSelectedWord(e.target.value)}
+              className="marginBottom"
+            />
             <button className='save' onClick={addWord}>Add word</button>
+          </ModalWindow>
+        )
+        }
+        {popup === 'edit' && (
+          <ModalWindow
+            title="Edit"
+            isOpen
+            onRequestClose={onClose}
+            className="delete-modal"
+          >
+            <div className="marginBottom">Edit word</div>
+            <input
+              value={selectedWord || ''}
+              onChange={() => null}
+              className="marginBottom"
+            />
+            <input
+              value={newWord || ''}
+              onChange={(e) => setNewWord(e.target.value)}
+              className="marginBottom"
+            />
+            <button className='save' onClick={() => updateWord(selectedWord, newWord)}>Edit</button>
           </ModalWindow>
         )
         }
@@ -113,15 +162,17 @@ function App() {
             className="delete-modal"
           >
             <div className="marginBottom">Are you sure?</div>
-            <button className='save' onClick={deleteWord}> Delete</button>
+            <button className='save' onClick={deleteWord}>Delete</button>
           </ModalWindow>
         )
         }
         <div className='column'>
+          <div>There are {texts.length} texts. Please enter text number</div>
           <input
             value={selectedText + 1 || ''}
             onChange={onTextChange}
           />
+          <button onClick={onReload} className='save'>Reload</button>
           <button onClick={onSave} className='save'>Save</button>
           <textarea
             value={text}
@@ -136,6 +187,7 @@ function App() {
             <div className='word'>
               <div className='sort' onClick={sortByWord}><b>Word</b></div>
               <div className='sort' onClick={sortByFreq}><b>Frequency</b></div>
+              <div className='block'><b>Edit</b></div>
               <div className='block'><b>Delete</b></div>
             </div>
             {words.map(word => {
@@ -143,6 +195,14 @@ function App() {
                 <li className='word'>
                   <div className='block'>{word[0]}</div>
                   <div className='block'>{word[1]}</div>
+                  <div className='block_icon' onClick={() => {
+                    onEdit();
+                    setSelectedWord(word[0]);
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M19.7401 6.33966C20.0867 6.68628 20.0867 7.24621 19.7401 7.59282L18.1136 9.21927L14.7807 5.88639L16.4072 4.25995C16.5732 4.09353 16.7987 4 17.0338 4C17.2689 4 17.4943 4.09353 17.6603 4.25995L19.7401 6.33966ZM4 19.5556V16.8538C4 16.7293 4.04444 16.6227 4.13331 16.5338L13.8298 6.83736L17.1626 10.1702L7.4573 19.8667C7.37731 19.9556 7.26177 20 7.14623 20H4.44438C4.19553 20 4 19.8045 4 19.5556Z" fill="#ADD8E6"/>
+                    </svg>
+                  </div>
                   <div className='block_icon' onClick={() => {
                     onDelete();
                     setSelectedWord(word[0]);

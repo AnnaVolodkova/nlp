@@ -47,3 +47,7 @@ export const getWords = (text) => {
   return _getWords(result);
 }
 
+export const getWord = (word, words) => {
+  return words.find(w => w[0] === word);
+}
+

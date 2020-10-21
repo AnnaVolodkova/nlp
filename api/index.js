@@ -4,6 +4,7 @@ const Router = require('koa-router');
 const fs = require('fs');
 const cors = require('@koa/cors');
 
+const N = 5;
 const getText = (fs, files) => {
   let text='';
   files.forEach((file) => {
@@ -44,7 +45,7 @@ const getWordsAndFreqObj = (text) => {
 
 const start = (fs) => {
   const texts =[];
-  for (let i=1; i<6; i++) {
+  for (let i=1; i<N; i++) {
    texts.push(`texts/${i}.txt`);
   }
   const text = getText(fs, texts);
@@ -63,7 +64,7 @@ router
   })
   .get('/texts', (ctx) => {
     const texts =[];
-    for (let i=1; i<6; i++) {
+    for (let i=1; i<N; i++) {
       texts.push(fs.readFileSync(`texts/${i}.txt`).toString());
     }
     ctx.body = texts;

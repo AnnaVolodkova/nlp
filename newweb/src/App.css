@@ -27,8 +27,12 @@
 
 .block {
   width: 250px;
+  max-width: 250px;
   padding: 6px;
   border-left: 1px solid gray;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .block_icon {
@@ -48,7 +52,7 @@
 
 .sort:hover {
   cursor: pointer;
-  background-color: lightblue;
+  background-color: #add8e6;
 }
 
 .textarea {
@@ -63,6 +67,10 @@ input {
 .save {
   padding: 6px 10px;
   border: 1px solid gray;
+
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
 
   background-color: lightblue;
 
