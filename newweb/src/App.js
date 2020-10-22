@@ -1,7 +1,10 @@
 import React, {useState, useEffect} from 'react';
 
 import * as helpers from './resources/helpers';
+
 import {getResult, getTexts} from './resources/resources';
+
+import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 
 import ModalWindow from './modal';
 
@@ -21,8 +24,12 @@ function App() {
 
   const [popup, setPopup] = useState('');
 
+  const [notes, setNotes] = useState([]);
+  const [error, setError] = useState('');
+
   const [selectedWord, setSelectedWord] = useState('');
   const [newWord, setNewWord] = useState('')
+  const [oldWord, setOldWord] = useState('');
 
   useEffect(async () => {
     setLoading(true);
@@ -39,7 +46,6 @@ function App() {
   const sortByFreq = () => {
     setWords(helpers.getSortedWordsByFreq(words, freqOrder));
     setFreqOrder(freqOrder === 1 ? 0 : 1);
-
   };
 
   const sortByWord = () => {
@@ -48,13 +54,16 @@ function App() {
   }
 
   const onReload = async () => {
-    setLoading(true);
     setWords(helpers.getWords(helpers.getText(texts)));
-    setLoading(false);
   }
 
   const onSave = async () => {
     setTexts(texts.map((item, index) => index === selectedText ? text : item));
+  }
+
+  const onCancelF = async () => {
+    setNotes([]);
+    setOldWord('');
   }
 
   const onTextChange = (e) => {
@@ -65,11 +74,13 @@ function App() {
   }
 
   const addWord = () => {
-    setWords([...words, [selectedWord, 0]]);
-    setSelectedWord('');
-    setPopup('');
+    if (selectedWord && words.some(w => w[0] === selectedWord)) {
+      setError('This word has already exist.');
+    } else {
+      setWords([...words, [selectedWord, 0]]);
+      onClose();
+    }
   }
-
 
   const deleteWord = () => {
     setWords(words.filter(i => i[0] !== selectedWord));
@@ -83,11 +94,15 @@ function App() {
     if (newWord) {
       const buf = newWords.filter(i => i[0] !== will);
       buf.push([will, oldWord[1] + newWord[1]]);
-      console.log([will, oldWord[1] + newWord[1]], oldWord, newWord);
       setWords(buf);
     } else {
-      console.log('hahah')
       setWords([...newWords, [will, oldWord[1]]]);
+      const textNumbers = helpers.findWordInTexts(was, texts);
+      setNotes(textNumbers);
+      if (textNumbers.length > 0) {
+        setSelectedText(textNumbers[0]);
+        setOldWord(was);
+      }
     }
     onClose();
   }
@@ -107,6 +122,7 @@ function App() {
   const onClose = () => {
     setSelectedWord('');
     setNewWord('')
+    setError('');
     setPopup('');
   }
 
@@ -116,72 +132,25 @@ function App() {
     <>
       {!loading &&
       <div className='container'>
-        {popup === 'add' && (
-          <ModalWindow
-            title="Add word"
-            isOpen
-            onRequestClose={onClose}
-            className="delete-modal"
-          >
-            <input
-              value={selectedWord || ''}
-              onChange={(e) => setSelectedWord(e.target.value)}
-              className="marginBottom"
-            />
-            <button className='save' onClick={addWord}>Add word</button>
-          </ModalWindow>
-        )
-        }
-        {popup === 'edit' && (
-          <ModalWindow
-            title="Edit"
-            isOpen
-            onRequestClose={onClose}
-            className="delete-modal"
-          >
-            <div className="marginBottom">Edit word</div>
-            <input
-              value={selectedWord || ''}
-              onChange={() => null}
-              className="marginBottom"
-            />
-            <input
-              value={newWord || ''}
-              onChange={(e) => setNewWord(e.target.value)}
-              className="marginBottom"
-            />
-            <button className='save' onClick={() => updateWord(selectedWord, newWord)}>Edit</button>
-          </ModalWindow>
-        )
-        }
-        {popup === 'delete' && (
-          <ModalWindow
-            title="Delete"
-            isOpen
-            onRequestClose={onClose}
-            className="delete-modal"
-          >
-            <div className="marginBottom">Are you sure?</div>
-            <button className='save' onClick={deleteWord}>Delete</button>
-          </ModalWindow>
-        )
-        }
         <div className='column'>
-          <div>There are {texts.length} texts. Please enter text number</div>
+          {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
+          <div className="div">There are {texts.length} texts. Please enter text number</div>
           <input
             value={selectedText + 1 || ''}
             onChange={onTextChange}
           />
-          <button onClick={onReload} className='save'>Reload</button>
+
           <button onClick={onSave} className='save'>Save</button>
-          <textarea
-            value={text}
+          {notes.length > 0 && <button onClick={onCancelF} className='save'>Cancel</button>}
+          <HighlightWithinTextarea
+            value={text || ''}
+            highlight={helpers.getHighlightWord(oldWord)}
             onChange={(e) => setText(e.target.value)}
             className='textarea'
           />
         </div>
         <div className='column'>
-          <div>Unique words amount {words.length}</div>
+          <button onClick={onReload} className='save'>Reload</button>
           <button className="save" onClick={onAdd}>Add word</button>
           <ul className='words'>
             <div className='word'>
@@ -219,6 +188,58 @@ function App() {
             })}
           </ul>
         </div>
+        {popup === 'add' && (
+          <ModalWindow
+            title="Add word"
+            isOpen
+            onRequestClose={onClose}
+            className="modal"
+          >
+            <input
+              value={selectedWord || ''}
+              onChange={(e) => setSelectedWord(e.target.value)}
+              className="marginBottom"
+            />
+            <div className="error">{error}</div>
+            <button className='save' onClick={addWord}>Add word</button>
+          </ModalWindow>
+        )
+        }
+        {popup === 'edit' && (
+          <ModalWindow
+            title="Edit"
+            isOpen
+            onRequestClose={onClose}
+            className="modal"
+          >
+            <div className="marginBottom">Edit word</div>
+            <input
+              value={selectedWord || ''}
+              onChange={() => null}
+              className="marginBottom"
+              disabled
+            />
+            <input
+              value={newWord || ''}
+              onChange={(e) => setNewWord(e.target.value)}
+              className="marginBottom"
+            />
+            <button className='save' onClick={() => updateWord(selectedWord, newWord)}>Edit</button>
+          </ModalWindow>
+        )
+        }
+        {popup === 'delete' && (
+          <ModalWindow
+            title="Delete"
+            isOpen
+            onRequestClose={onClose}
+            className="modal"
+          >
+            <div className="marginBottom">Are you sure?</div>
+            <button className='save' onClick={deleteWord}>Delete</button>
+          </ModalWindow>
+        )
+        }
       </div>
       }
     </>

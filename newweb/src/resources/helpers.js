@@ -51,3 +51,28 @@ export const getWord = (word, words) => {
   return words.find(w => w[0] === word);
 }
 
+export const findWordInTexts = (word, texts) => {
+  let textNumbers = [];
+  texts.forEach((text, index )=> {
+    getWords(text).forEach(w => {
+      // console.log(word, w[0]);
+      if (w[0] === word) textNumbers.push(index);
+    })
+  })
+  return textNumbers;
+}
+
+export const getStringFromArr = (arr) => {
+  let str = '';
+  arr.forEach(i => str+=(++i + ' '));
+  return str;
+}
+
+export const getHighlightWord = (word) => {
+  const letters = word.split('');
+  letters.push(' ');
+  letters.unshift(' ');
+  return letters.join('');
+
+}
+

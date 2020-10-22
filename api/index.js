@@ -4,7 +4,7 @@ const Router = require('koa-router');
 const fs = require('fs');
 const cors = require('@koa/cors');
 
-const N = 5;
+const N = 6;
 const getText = (fs, files) => {
   let text='';
   files.forEach((file) => {
