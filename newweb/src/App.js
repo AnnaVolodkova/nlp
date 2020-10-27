@@ -73,6 +73,8 @@ function App() {
     }
   }
 
+  const openTaggedText = () => null;
+
   const addWord = () => {
     if (selectedWord && words.some(w => w[0] === selectedWord)) {
       setError('This word has already exist.');
@@ -133,14 +135,15 @@ function App() {
       {!loading &&
       <div className='container'>
         <div className='column'>
+          <button className="save" onClick={openTaggedText}>Show tagged text</button>
+        </div>
+        <div className='column'>
           {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
           <div className="div">There are {texts.length} texts. Please enter text number</div>
           <input
             value={selectedText + 1 || ''}
             onChange={onTextChange}
           />
-
-          <button onClick={onSave} className='save'>Save</button>
           {notes.length > 0 && <button onClick={onCancelF} className='save'>Cancel</button>}
           <HighlightWithinTextarea
             value={text || ''}
@@ -148,6 +151,7 @@ function App() {
             onChange={(e) => setText(e.target.value)}
             className='textarea'
           />
+          <button onClick={onSave} className='save'>Save</button>
         </div>
         <div className='column'>
           <button onClick={onReload} className='save'>Reload</button>

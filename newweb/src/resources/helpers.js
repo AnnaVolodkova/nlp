@@ -73,6 +73,4 @@ export const getHighlightWord = (word) => {
   letters.push(' ');
   letters.unshift(' ');
   return letters.join('');
-
 }
-

@@ -3,8 +3,10 @@ const bodyParser = require('koa-bodyparser');
 const Router = require('koa-router');
 const fs = require('fs');
 const cors = require('@koa/cors');
+const Tag = require("en-pos").Tag;
+const pos = require('pos');
 
-const N = 6;
+const N = 3;
 const getText = (fs, files) => {
   let text='';
   files.forEach((file) => {
@@ -63,18 +65,37 @@ router
     ctx.body = result;
   })
   .get('/texts', (ctx) => {
-    const texts =[];
+    const texts = [];
+    //   {
+    //   texts: [],
+    //   taggedTexts:
+    // };
     for (let i=1; i<N; i++) {
       texts.push(fs.readFileSync(`texts/${i}.txt`).toString());
     }
     ctx.body = texts;
   })
 
+//
+// app.use(bodyParser());
+//
+// app
+//   .use(router.routes())
+//   .use(router.allowedMethods());
+//
+// app.listen(3012);
 
-app.use(bodyParser());
+// const tags = new Tag(["who"])
+//   .initial() // initial dictionary and pattern based tagging
+//   .smooth() // further context based smoothing
+//   .tags;
+// ["DT","VBZ","PRP$","NN"]
 
-app
-  .use(router.routes())
-  .use(router.allowedMethods());
+const words = new pos.Lexer().lex(fs.readFileSync(`texts/1.txt`).toString());
+const tags = new pos.Tagger()
+  .tag(words)
+  .map(function(tag){return tag[0] + '/' + tag[1];})
+  .join(' ');
 
-app.listen(3012);
+console.log(tags);
+
