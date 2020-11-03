@@ -19,7 +19,9 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const [text, setText] = useState('');
+  const [taggedText, setTaggedText] = useState('');
   const [texts, setTexts] = useState([]);
+  const [taggedTexts, setTaggedTexts] = useState([]);
   const [selectedText, setSelectedText]= useState(0);
 
   const [popup, setPopup] = useState('');
@@ -31,14 +33,32 @@ function App() {
   const [newWord, setNewWord] = useState('')
   const [oldWord, setOldWord] = useState('');
 
+  const hello = (e) => {
+    e.preventDefault();
+    // console.log('contextmenu', window.getSelection().toString());
+    setSelectedWord(window.getSelection().toString());
+    setPopup('contextmenu');
+    console.log('WORD', helpers.getWord(window.getSelection().toString().toLowerCase(), words));
+  };
+
+  useEffect(() => {
+    document.addEventListener("contextmenu", hello);
+    return () => {
+      document.removeEventListener("contextmenu", hello);
+    };
+  });
+
   useEffect(async () => {
     setLoading(true);
     const fetchedResult = await getResult();
     setWords(helpers.getSortedWordsByFreq(helpers._getWords(fetchedResult.data), freqOrder));
 
-    const texts = await getTexts();
-    setTexts(texts.data);
-    setText(texts.data[0]);
+    const data = await getTexts();
+    console.log(typeof data.data.taggedTexts, typeof data.data.taggedTexts[0]);
+    setTaggedTexts(data.data.taggedTexts);
+
+    setTexts(data.data.texts);
+    setText(data.data.texts[0]);
     setLoading(false);
   }, []);
 
@@ -73,7 +93,10 @@ function App() {
     }
   }
 
-  const openTaggedText = () => null;
+  const openTaggedText = () => {
+    console.log('selectedText, taggedText', selectedText, taggedTexts)
+    setTaggedText(taggedTexts[selectedText]);
+  };
 
   const addWord = () => {
     if (selectedWord && words.some(w => w[0] === selectedWord)) {
@@ -109,6 +132,13 @@ function App() {
     onClose();
   }
 
+  const onClose = () => {
+    setSelectedWord('');
+    setNewWord('')
+    setError('');
+    setPopup('');
+  }
+
   const onAdd = () => {
     setPopup('add');
   };
@@ -121,13 +151,6 @@ function App() {
     setPopup('delete');
   };
 
-  const onClose = () => {
-    setSelectedWord('');
-    setNewWord('')
-    setError('');
-    setPopup('');
-  }
-
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -136,6 +159,9 @@ function App() {
       <div className='container'>
         <div className='column'>
           <button className="save" onClick={openTaggedText}>Show tagged text</button>
+          <div className='textarea'>
+            {taggedText && taggedText}
+          </div>
         </div>
         <div className='column'>
           {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
@@ -146,6 +172,7 @@ function App() {
           />
           {notes.length > 0 && <button onClick={onCancelF} className='save'>Cancel</button>}
           <HighlightWithinTextarea
+            id="textarea"
             value={text || ''}
             highlight={helpers.getHighlightWord(oldWord)}
             onChange={(e) => setText(e.target.value)}
@@ -241,6 +268,18 @@ function App() {
           >
             <div className="marginBottom">Are you sure?</div>
             <button className='save' onClick={deleteWord}>Delete</button>
+          </ModalWindow>
+        )
+        }
+        {popup === 'contextmenu' && (
+          <ModalWindow
+            title="Handle tags"
+            isOpen
+            onRequestClose={onClose}
+            className="modal"
+          >
+            <div className="marginBottom">Word is <b>{selectedWord}</b></div>
+            <div></div>
           </ModalWindow>
         )
         }

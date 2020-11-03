@@ -1,3 +1,5 @@
+import pos from 'pos';
+
 export const getSortedWords = (words, boolean = 1) => {
   const sorted = [];
   words.sort((a, b) => (a[0] !== b[0]) ? (a[0] < b[0]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sorted.push(i));
@@ -11,7 +13,15 @@ export const getSortedWordsByFreq = (words, boolean = 1) => {
 };
 
 export const _getWords = (result) => {
-  return  Object.entries(result);
+  // return  Object.entries(result).map(i => {
+  //   const arr = new pos.Tagger().tag([i[0]]);
+  //   return [ ...i, arr[1]];
+  // });
+  console.log(Object.entries(result).map(i => {
+    const arr = new pos.Tagger().tag([i[0]]);
+      return [ ...i, arr[1]];
+    }));
+  return Object.entries(result);
 }
 
 export const getText = (texts) => {
