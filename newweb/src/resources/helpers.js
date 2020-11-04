@@ -17,11 +17,13 @@ export const _getWords = (result) => {
   //   const arr = new pos.Tagger().tag([i[0]]);
   //   return [ ...i, arr[1]];
   // });
-  console.log(Object.entries(result).map(i => {
+  const arr = Object.entries(result).map(i => {
     const arr = new pos.Tagger().tag([i[0]]);
-      return [ ...i, arr[1]];
-    }));
-  return Object.entries(result);
+    return [...i, arr[0][1]];
+  });
+  // console.log(new pos.Tagger().tag(["hello"]));
+  console.log(arr[0]);
+  return arr;
 }
 
 export const getText = (texts) => {
@@ -63,7 +65,7 @@ export const getWord = (word, words) => {
 
 export const findWordInTexts = (word, texts) => {
   let textNumbers = [];
-  texts.forEach((text, index )=> {
+  texts.forEach((text, index) => {
     getWords(text).forEach(w => {
       // console.log(word, w[0]);
       if (w[0] === word) textNumbers.push(index);
@@ -74,7 +76,7 @@ export const findWordInTexts = (word, texts) => {
 
 export const getStringFromArr = (arr) => {
   let str = '';
-  arr.forEach(i => str+=(++i + ' '));
+  arr.forEach(i => Number.isInteger(i) ? str += (++i + ' ') : str += (i + ' '));
   return str;
 }
 
@@ -84,3 +86,21 @@ export const getHighlightWord = (word) => {
   letters.unshift(' ');
   return letters.join('');
 }
+
+export const getTags = (arr) => {
+  const [word, freq, ...rest] = arr;
+  return rest;
+}
+
+export const addTag = (word, tag) => {
+  return [...word, tag];
+};
+
+export const updateTag = (word, was, will) => {
+  const tags = getTags(word);
+  return [ word[0], word[1], ...tags.map(t => t===was ? will : t)];
+};
+
+export const removeTag = (word, tag) => {
+  return word.filter(i => i!==tag);
+};

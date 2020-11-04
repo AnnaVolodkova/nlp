@@ -5,7 +5,7 @@ const fs = require('fs');
 const cors = require('@koa/cors');
 const pos = require('pos');
 
-const N = 3;
+const N = 6;
 
 const getText = (fs, files) => {
   let text = '';
@@ -67,6 +67,9 @@ router
     for (let i = 1; i < N; i++) {
       texts.push(fs.readFileSync(`texts/${i}.txt`).toString());
     }
+    ctx.body = {texts};
+  })
+  .get('/taggedTexts', (ctx) => {
     const taggedTexts = [];
     for (let i = 1; i < N; i++) {
       const words = new pos.Lexer().lex(fs.readFileSync(`texts/${i}.txt`).toString());
@@ -76,7 +79,7 @@ router
         .join(' ');
       taggedTexts.push(tags);
     }
-    ctx.body = {texts, taggedTexts};
+    ctx.body = {taggedTexts};
   })
 
 
@@ -103,6 +106,7 @@ app.listen(3012);
 //   })
 //   .join(' ');
 
-// console.log(new pos.Tagger().tag(["hello"]));
+// const smth = new pos.Tagger().tag(["hello"]);
+// console.log(smth[0][1]);
 
 

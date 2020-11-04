@@ -1,9 +1,15 @@
 import axios from 'axios';
 
+const PORT = 3012;
+
 export const getResult = () => {
-  return axios.get(`http://localhost:3012/result`);
+  return axios.get(`http://localhost:${PORT}/result`);
 };
 
 export const getTexts = () => {
-  return axios.get(`http://localhost:3012/texts`);
+  return axios.get(`http://localhost:${PORT}/texts`);
+};
+
+export const getTaggedTexts = () => {
+  return axios.get(`http://localhost:${PORT}/taggedTexts`);
 };
