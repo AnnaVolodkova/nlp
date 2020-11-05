@@ -76,7 +76,6 @@ function App() {
       onClose();
     }
   };
-
   const onUpdateTag = () => {
     if (word.includes(newWord)) {
       setError('This tag has already exist.');
@@ -85,7 +84,6 @@ function App() {
       onClose();
     }
   }
-
   const onRemoveTag = () => {
     if (!word.includes(tag)) {
       setError('This tag is not found.');
@@ -104,11 +102,15 @@ function App() {
     setWordOrder(wordOrder === 1 ? -1 : 1);
   }
 
+  const onSave = () => {
+    setTexts(texts.map((item, index) => index === selectedText ? text : item));
+  }
+  const onSaveTaggedText = () => {
+    console.log(selectedText);
+    setTaggedTexts(taggedTexts.map((item, index) => index === selectedText ? taggedText : item));
+  };
   const onReload = async () => {
     setWords(helpers.getWords(helpers.getText(texts)));
-  }
-  const onSave = async () => {
-    setTexts(texts.map((item, index) => index === selectedText ? text : item));
   }
   const onCancelF = async () => {
     setNotes([]);
@@ -190,9 +192,13 @@ function App() {
       <div className='container'>
         <div className='column'>
           <button className="save" onClick={openTaggedText}>Show tagged text</button>
-          <div className='textarea'>
-            {taggedText}
-          </div>
+          <textarea
+            id="1"
+            value={taggedText || ''}
+            onChange={(e) => setTaggedText(e.target.value)}
+            className='textarea'
+          />
+          <button onClick={onSaveTaggedText} className='save'>Save</button>
         </div>
         <div className='column'>
           {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
