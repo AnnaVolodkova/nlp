@@ -33,6 +33,7 @@ function App() {
   const [newWord, setNewWord] = useState('')
   const [oldWord, setOldWord] = useState('');
 
+  const [highlight, setHighlight] = useState('');
   const [word, setWord] = useState([]);
   const [tag, setTag] = useState('');
 
@@ -42,6 +43,7 @@ function App() {
     setPopup('contextmenu');
     setOldWord('');
     setWord(helpers.getWord(window.getSelection().toString().toLowerCase(), words));
+    setHighlight(window.getSelection().toString().toLowerCase());
   };
 
   useEffect(() => {
@@ -76,7 +78,6 @@ function App() {
       onClose();
     }
   };
-
   const onUpdateTag = () => {
     if (word.includes(newWord)) {
       setError('This tag has already exist.');
@@ -85,7 +86,6 @@ function App() {
       onClose();
     }
   }
-
   const onRemoveTag = () => {
     if (!word.includes(tag)) {
       setError('This tag is not found.');
@@ -104,13 +104,19 @@ function App() {
     setWordOrder(wordOrder === 1 ? -1 : 1);
   }
 
+  const onSave = () => {
+    setTexts(texts.map((item, index) => index === selectedText ? text : item));
+    onCancelF();
+  }
+  const onSaveTaggedText = () => {
+    // console.log(selectedText);
+    setHighlight('');
+    setTaggedTexts(taggedTexts.map((item, index) => index === selectedText ? taggedText : item));
+  };
   const onReload = async () => {
     setWords(helpers.getWords(helpers.getText(texts)));
   }
-  const onSave = async () => {
-    setTexts(texts.map((item, index) => index === selectedText ? text : item));
-  }
-  const onCancelF = async () => {
+  const onCancelF = () => {
     setNotes([]);
     setOldWord('');
   }
@@ -143,7 +149,7 @@ function App() {
     const newWord = helpers.getWord(will, words);
     if (newWord) {
       const buf = newWords.filter(i => i[0] !== will);
-      buf.push([will, oldWord[1] + newWord[1]]);
+      buf.push([will, oldWord[1] + newWord[1], ...helpers.getTags(newWord)]);
       setWords(buf);
     } else {
       setWords([...newWords, [will, oldWord[1]]]);
@@ -190,9 +196,13 @@ function App() {
       <div className='container'>
         <div className='column'>
           <button className="save" onClick={openTaggedText}>Show tagged text</button>
-          <div className='textarea'>
-            {taggedText}
-          </div>
+          <HighlightWithinTextarea
+            value={taggedText || ''}
+            highlight={highlight || ''}
+            onChange={(e) => setTaggedText(e.target.value)}
+            className='textarea'
+          />
+          <button onClick={onSaveTaggedText} className='save'>Save</button>
         </div>
         <div className='column'>
           {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
@@ -333,7 +343,11 @@ function App() {
                 className="marginBottom"
               />
               <div className="error">{error}</div>
-              <button className='save' onClick={onAddTag}>Add tag</button>
+              <div className="marginBottom">
+                <button className='save' onClick={onAddTag}>Add tag</button>
+              </div>
+              <button className='save' onClick={onRemoveTag}>Remove tag</button>
+
             </div>
             <div className="marginBottom">
               <input
@@ -347,15 +361,6 @@ function App() {
                 className="marginBottom"
               />
               <button className='save' onClick={onUpdateTag}>Edit tag</button>
-            </div>
-            <div className="marginBottom">
-              <input
-                value={tag || ''}
-                onChange={(e) => setTag(e.target.value)}
-                className="marginBottom"
-              />
-              <div className="error">{error}</div>
-              <button className='save' onClick={onRemoveTag}>Remove tag</button>
             </div>
           </ModalWindow>
         )

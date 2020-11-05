@@ -5,7 +5,7 @@ const fs = require('fs');
 const cors = require('@koa/cors');
 const pos = require('pos');
 
-const N = 6;
+const N = 3;
 
 const getText = (fs, files) => {
   let text = '';
