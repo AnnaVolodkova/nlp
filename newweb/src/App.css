@@ -104,8 +104,8 @@ input {
 
   position: absolute;
   top: 200px;
-  right: 600px;
-  left: 600px;
+  right: 500px;
+  left: 500px;
   bottom: 500px;
   display: flex;
   flex-direction: column;
