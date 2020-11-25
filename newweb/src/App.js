@@ -61,11 +61,9 @@ function App() {
     const data = await getTexts();
     setTexts(data.data.texts);
     setText(data.data.texts[0]);
-    // console.log('data.data.texts', typeof data.data.texts, data.data)
 
     const data1 = await getTaggedTexts();
     setTaggedTexts(data1.data.taggedTexts);
-    // console.log(data1);
 
     setLoading(false);
   }, []);
@@ -109,7 +107,6 @@ function App() {
     onCancelF();
   }
   const onSaveTaggedText = () => {
-    // console.log(selectedText);
     setHighlight('');
     setTaggedTexts(taggedTexts.map((item, index) => index === selectedText ? taggedText : item));
   };
@@ -127,7 +124,6 @@ function App() {
     }
   }
   const openTaggedText = () => {
-    console.log('selectedText, taggedText', selectedText, taggedTexts)
     setTaggedText(taggedTexts[selectedText]);
   };
 
@@ -149,10 +145,10 @@ function App() {
     const newWord = helpers.getWord(will, words);
     if (newWord) {
       const buf = newWords.filter(i => i[0] !== will);
-      buf.push([will, oldWord[1] + newWord[1], ...helpers.getTags(newWord)]);
+      buf.push([will, oldWord[1] + newWord[1], oldWord[2], ...helpers.getTags(newWord)]);
       setWords(buf);
     } else {
-      setWords([...newWords, [will, oldWord[1]]]);
+      setWords([...newWords, [will, oldWord[1], oldWord[2]]]);
       const textNumbers = helpers.findWordInTexts(was, texts);
       setNotes(textNumbers);
       if (textNumbers.length > 0) {
@@ -229,15 +225,17 @@ function App() {
               <div className='sort' onClick={sortByWord}><b>Word</b></div>
               <div className='sort' onClick={sortByFreq}><b>Frequency</b></div>
               <div className='sort' onClick={showInfo}><b>Tags</b></div>
+              <div className='block'><b>Lemma</b></div>
               <div className='block'><b>Edit</b></div>
               <div className='block'><b>Delete</b></div>
             </div>
             {words.map(word => {
               return (
                 <li className='word'>
-                  <div className='block'>{word[0]}</div>
+                  <div className='block' title={word[0]}>{word[0]}</div>
                   <div className='block'>{word[1]}</div>
                   <div className='block'>{helpers.getStringFromArr(helpers.getTags(word))}</div>
+                  <div className='block' title={word[2]}>{word[2]}</div>
                   <div className='block_icon' onClick={() => {
                     onEdit();
                     setSelectedWord(word[0]);
