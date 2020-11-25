@@ -1,4 +1,6 @@
+import React from 'react';
 import pos from 'pos';
+import extract from'extract-lemmatized-nonstop-words';
 
 export const getSortedWords = (words, boolean = 1) => {
   const sorted = [];
@@ -13,16 +15,16 @@ export const getSortedWordsByFreq = (words, boolean = 1) => {
 };
 
 export const _getWords = (result) => {
-  // return  Object.entries(result).map(i => {
-  //   const arr = new pos.Tagger().tag([i[0]]);
-  //   return [ ...i, arr[1]];
-  // });
   const arr = Object.entries(result).map(i => {
     const arr = new pos.Tagger().tag([i[0]]);
-    return [...i, arr[0][1]];
+    const tag = arr[0][1];
+    const words = extract(i[0], false);
+    let lemma = words[0]?.lemma || i[0];
+    const POS = words[0]?.pos || '';
+    // вот тут неправильно вроде
+    if (result[lemma] && lemma!==i[0]) lemma += `_${result[lemma]}`;
+    return [...i, lemma, POS !== tag ? POS : '', tag];
   });
-  // console.log(new pos.Tagger().tag(["hello"]));
-  console.log(arr[0]);
   return arr;
 }
 
@@ -33,7 +35,7 @@ export const getText = (texts) => {
 }
 
 export const getWords = (text) => {
-  const arr = text.replace(/[\n\r]/g, " ").split(' ');
+  const arr = text.replace(/[\n\r]/g, ' ').split(' ');
 
   const result = {};
 
@@ -67,7 +69,6 @@ export const findWordInTexts = (word, texts) => {
   let textNumbers = [];
   texts.forEach((text, index) => {
     getWords(text).forEach(w => {
-      // console.log(word, w[0]);
       if (w[0] === word) textNumbers.push(index);
     })
   })
@@ -88,7 +89,7 @@ export const getHighlightWord = (word) => {
 }
 
 export const getTags = (arr) => {
-  const [word, freq, ...rest] = arr;
+  const [word, freq, lemma, ...rest] = arr;
   return rest;
 }
 
@@ -98,9 +99,48 @@ export const addTag = (word, tag) => {
 
 export const updateTag = (word, was, will) => {
   const tags = getTags(word);
-  return [ word[0], word[1], ...tags.map(t => t===was ? will : t)];
+  return [word[0], word[1], word[2], ...tags.map(t => t === was ? will : t)];
 };
 
 export const removeTag = (word, tag) => {
-  return word.filter(i => i!==tag);
+  return word.filter(i => i !== tag);
+};
+
+export const tags = {
+  CD: {pos: 'Cardinal number', ex: 'one, two'},
+  DT: {pos: 'Determiner', ex: 'the, some'},
+  EX: {pos: 'Existential there', ex: 'there'},
+  FW: {pos: 'Foreign Word', ex: 'mon dieu'},
+  IN: {pos: 'Preposition', ex: 'of, in, by'},
+  JJ: {pos: 'Adjective', ex: 'big'},
+  JJR: {pos: 'Adj., comparative', ex: 'bigger'},
+  JJS: {pos: 'Adj., superlative', ex: 'biggest'},
+  LS: {pos: 'List item marker', ex: '1, One'},
+  MD: {pos: 'Modal', ex: 'can, should'},
+  NN: {pos: 'Noun, sing. or mass', ex: 'dog'},
+  NNP: {pos: 'Proper noun, sing.', ex: 'Edinburgh'},
+  NNPS: {pos: 'Proper noun, plural', ex: 'Smiths'},
+  NNS: {pos: 'Noun, plural', ex: 'dogs'},
+  POS: {pos: 'Possessive ending', ex: 's'},
+  PDT: {pos: 'Predeterminer ', ex: 'all, both'},
+  'PP\'': {pos: 'Possessive pronoun', ex: 'my,ones'},
+  PRP: {pos: 'Personal pronoun', ex: 'I, you, she'},
+  RB: {pos: 'Adverb', ex: 'quickly'},
+  RBR: {pos: 'Adverb, comparative', ex: 'faster'},
+  RBS: {pos: 'Adverb, superlative', ex: 'fastest'},
+  RP: {pos: 'Particle', ex: 'up, off'},
+  SYM: {pos: 'Symbol', ex: '+, %, &'},
+  TO: {pos: '�to�', ex: 'to'},
+  UH: {pos: 'Interjection', ex: 'oh, oops'},
+  VB: {pos: 'verb, base form', ex: 'eat',},
+  VBD: {pos: 'verb, past tense', ex: 'ate'},
+  VBG: {pos: 'verb, gerund', ex: 'eating'},
+  VBN: {pos: 'verb, past', ex: 'eaten'},
+  VBP: {pos: 'Verb, present', ex: 'eat'},
+  VBZ: {pos: 'Verb, present', ex: 'eats'},
+  WDT: {pos: 'Wh - determiner', ex: ' which, that'},
+  WP: {pos: 'Wh pronoun', ex: 'who, what'},
+  'WP\'': {pos: 'Possessive-Wh', ex: 'whose'},
+  WRB: {pos: 'Wh - adverb', ex: 'how, where'},
+  OTHERS: {pos: 'Others', ex: '. , ) ('}
 };
