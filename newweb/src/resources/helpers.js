@@ -22,7 +22,12 @@ export const _getWords = (result) => {
     let lemma = words[0]?.lemma || i[0];
     const POS = words[0]?.pos || '';
     // вот тут неправильно вроде
-    if (result[lemma] && lemma!==i[0]) lemma += `_${result[lemma]}`;
+    // if (result[lemma] && lemma!==i[0]) {
+    //   const posLemma = extract(lemma, false)[0]?.pos;
+    //   lemma += `_${posLemma}_${result[lemma]}`;
+    // }
+    const posLemma = new pos.Tagger().tag([i[0]])[0][1];
+    lemma += `_${posLemma}`;
     return [...i, lemma, POS !== tag ? POS : '', tag];
   });
   return arr;
@@ -91,6 +96,12 @@ export const getHighlightWord = (word) => {
 export const getTags = (arr) => {
   const [word, freq, lemma, ...rest] = arr;
   return rest;
+}
+
+export const updateLemmaTag = (word, tag) => {
+  const lemma = word[2];
+  const arr = lemma.split('_');
+  return [word[0], word[1], arr[0] + `_${tag}`, ...getTags(word)];
 }
 
 export const addTag = (word, tag) => {

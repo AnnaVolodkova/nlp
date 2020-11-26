@@ -139,21 +139,27 @@ function App() {
     setWords(words.filter(i => i[0] !== selectedWord));
     onClose();
   }
-  const updateWord = (was, will) => {
-    const oldWord = helpers.getWord(was, words);
-    const newWords = words.filter(i => i[0] !== was);
-    const newWord = helpers.getWord(will, words);
-    if (newWord) {
-      const buf = newWords.filter(i => i[0] !== will);
-      buf.push([will, oldWord[1] + newWord[1], oldWord[2], ...helpers.getTags(newWord)]);
-      setWords(buf);
+  const updateWord = (was, will, tag) => {
+    if (!will && tag) {
+      const newWords = words.filter(i => i[0] !== was);
+      const oldWord = helpers.getWord(was, words);
+      setWords([...newWords, helpers.updateLemmaTag(oldWord, tag)]);
     } else {
-      setWords([...newWords, [will, oldWord[1], oldWord[2]]]);
-      const textNumbers = helpers.findWordInTexts(was, texts);
-      setNotes(textNumbers);
-      if (textNumbers.length > 0) {
-        setSelectedText(textNumbers[0]);
-        setOldWord(was);
+      const oldWord = helpers.getWord(was, words);
+      const newWords = words.filter(i => i[0] !== was);
+      const newWord = helpers.getWord(will, words);
+      if (newWord) {
+        const buf = newWords.filter(i => i[0] !== will);
+        buf.push([will, oldWord[1] + newWord[1], oldWord[2], ...helpers.getTags(newWord)]);
+        setWords(buf);
+      } else {
+        setWords([...newWords, [will, oldWord[1], oldWord[2]]]);
+        const textNumbers = helpers.findWordInTexts(was, texts);
+        setNotes(textNumbers);
+        if (textNumbers.length > 0) {
+          setSelectedText(textNumbers[0]);
+          setOldWord(was);
+        }
       }
     }
     onClose();
@@ -306,7 +312,13 @@ function App() {
               onChange={(e) => setNewWord(e.target.value)}
               className="marginBottom"
             />
-            <button className='save' onClick={() => updateWord(selectedWord, newWord)}>Edit</button>
+            <div className="marginBottom">Edit tag</div>
+            <input
+              value={tag || ''}
+              onChange={(e) => setTag(e.target.value)}
+              className="marginBottom"
+            />
+            <button className='save' onClick={() => updateWord(selectedWord, newWord, tag)}>Edit</button>
           </ModalWindow>
         )
         }
