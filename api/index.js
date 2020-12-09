@@ -5,7 +5,7 @@ const fs = require('fs');
 const cors = require('@koa/cors');
 const pos = require('pos');
 
-const N = 3;
+const N = 4;
 
 const getText = (fs, files) => {
   let text = '';
@@ -61,6 +61,10 @@ router
   .get('/result', (ctx) => {
     const result = start(fs);
     ctx.body = result;
+  })
+  .get('/textsZero', (ctx) => {
+    const texts = [];
+    ctx.body = {texts};
   })
   .get('/texts', (ctx) => {
     const texts = [];

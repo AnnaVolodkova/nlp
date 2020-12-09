@@ -1,6 +1,45 @@
 import React from 'react';
 import pos from 'pos';
-import extract from'extract-lemmatized-nonstop-words';
+import extract from 'extract-lemmatized-nonstop-words';
+
+export const tags = {
+  CD: {pos: 'Cardinal number', ex: 'one, two', freq: 0},
+  DT: {pos: 'Determiner', ex: 'the, some', freq: 0},
+  EX: {pos: 'Existential there', ex: 'there', freq: 0},
+  FW: {pos: 'Foreign Word', ex: 'mon dieu', freq: 0},
+  IN: {pos: 'Preposition', ex: 'of, in, by', freq: 0},
+  JJ: {pos: 'Adjective', ex: 'big', freq: 0},
+  JJR: {pos: 'Adj., comparative', ex: 'bigger', freq: 0},
+  JJS: {pos: 'Adj., superlative', ex: 'biggest', freq: 0},
+  LS: {pos: 'List item marker', ex: '1, One', freq: 0},
+  MD: {pos: 'Modal', ex: 'can, should', freq: 0},
+  NN: {pos: 'Noun, sing. or mass', ex: 'dog', freq: 0},
+  NNP: {pos: 'Proper noun, sing.', ex: 'Edinburgh', freq: 0},
+  NNPS: {pos: 'Proper noun, plural', ex: 'Smiths', freq: 0},
+  NNS: {pos: 'Noun, plural', ex: 'dogs', freq: 0},
+  POS: {pos: 'Possessive ending', ex: 's', freq: 0},
+  PDT: {pos: 'Predeterminer ', ex: 'all, both', freq: 0},
+  'PP\'': {pos: 'Possessive pronoun', ex: 'my,ones', freq: 0},
+  PRP: {pos: 'Personal pronoun', ex: 'I, you, she', freq: 0},
+  RB: {pos: 'Adverb', ex: 'quickly', freq: 0},
+  RBR: {pos: 'Adverb, comparative', ex: 'faster', freq: 0},
+  RBS: {pos: 'Adverb, superlative', ex: 'fastest', freq: 0},
+  RP: {pos: 'Particle', ex: 'up, off', freq: 0},
+  SYM: {pos: 'Symbol', ex: '+, %, &', freq: 0},
+  TO: {pos: '�to�', ex: 'to', freq: 0},
+  UH: {pos: 'Interjection', ex: 'oh, oops', freq: 0},
+  VB: {pos: 'verb, base form', ex: 'eat', freq: 0},
+  VBD: {pos: 'verb, past tense', ex: 'ate', freq: 0},
+  VBG: {pos: 'verb, gerund', ex: 'eating', freq: 0},
+  VBN: {pos: 'verb, past', ex: 'eaten', freq: 0},
+  VBP: {pos: 'Verb, present', ex: 'eat', freq: 0},
+  VBZ: {pos: 'Verb, present', ex: 'eats', freq: 0},
+  WDT: {pos: 'Wh - determiner', ex: ' which, that', freq: 0},
+  WP: {pos: 'Wh pronoun', ex: 'who, what', freq: 0},
+  'WP\'': {pos: 'Possessive-Wh', ex: 'whose', freq: 0},
+  WRB: {pos: 'Wh - adverb', ex: 'how, where', freq: 0},
+  OTHERS: {pos: 'Others', ex: '. , ) (', freq: 0}
+};
 
 export const getSortedWords = (words, boolean = 1) => {
   const sorted = [];
@@ -14,22 +53,42 @@ export const getSortedWordsByFreq = (words, boolean = 1) => {
   return sortedFreq;
 };
 
+export const getSortedWordsByTags = (words, boolean = 1) => {
+  const sortedTags = [];
+
+  words.sort((a, b) => (a[a.length - 1] !== b[b.length - 1]) ?  (a[a.length - 1] < b[b.length - 1]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sortedTags.push(i));
+  return sortedTags;
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
 export const _getWords = (result) => {
   const arr = Object.entries(result).map(i => {
     const arr = new pos.Tagger().tag([i[0]]);
     const tag = arr[0][1];
+
+    if (tags[tag]) {
+      tags[tag].freq += i[1];
+    } else {
+      tags['OTHERS'].freq += i[1];
+    }
+
     const words = extract(i[0], false);
     let lemma = words[0]?.lemma || i[0];
     const POS = words[0]?.pos || '';
-    // вот тут неправильно вроде
-    // if (result[lemma] && lemma!==i[0]) {
-    //   const posLemma = extract(lemma, false)[0]?.pos;
-    //   lemma += `_${posLemma}_${result[lemma]}`;
-    // }
+
     const posLemma = new pos.Tagger().tag([i[0]])[0][1];
     lemma += `_${posLemma}`;
-    return [...i, lemma, POS !== tag ? POS : '', tag];
+
+    let random = getRandomInt(i[1])
+    const newTag = `${tag}_${random}`;
+    const newPos = `${POS}_${i[1] - random}`;
+
+    return [...i, lemma, (POS && POS !== tag) ? newPos : '', (POS && POS !== tag) ? newTag : `${tag}_${i[1]}` ];
   });
+
   return arr;
 }
 
@@ -94,8 +153,12 @@ export const getHighlightWord = (word) => {
 }
 
 export const getTags = (arr) => {
-  const [word, freq, lemma, ...rest] = arr;
-  return rest;
+  if (arr.length <= 3) {
+    return [];
+  } else {
+    const [word, freq, lemma, ...rest] = arr;
+    return rest;
+  }
 }
 
 export const updateLemmaTag = (word, tag) => {
@@ -105,6 +168,11 @@ export const updateLemmaTag = (word, tag) => {
 }
 
 export const addTag = (word, tag) => {
+  if (word.length === 2) {
+    const words = extract(word[0], false);
+    let lemma = words[0]?.lemma || word[0];
+    return [...word, lemma, tag];
+  }
   return [...word, tag];
 };
 
@@ -117,41 +185,4 @@ export const removeTag = (word, tag) => {
   return word.filter(i => i !== tag);
 };
 
-export const tags = {
-  CD: {pos: 'Cardinal number', ex: 'one, two'},
-  DT: {pos: 'Determiner', ex: 'the, some'},
-  EX: {pos: 'Existential there', ex: 'there'},
-  FW: {pos: 'Foreign Word', ex: 'mon dieu'},
-  IN: {pos: 'Preposition', ex: 'of, in, by'},
-  JJ: {pos: 'Adjective', ex: 'big'},
-  JJR: {pos: 'Adj., comparative', ex: 'bigger'},
-  JJS: {pos: 'Adj., superlative', ex: 'biggest'},
-  LS: {pos: 'List item marker', ex: '1, One'},
-  MD: {pos: 'Modal', ex: 'can, should'},
-  NN: {pos: 'Noun, sing. or mass', ex: 'dog'},
-  NNP: {pos: 'Proper noun, sing.', ex: 'Edinburgh'},
-  NNPS: {pos: 'Proper noun, plural', ex: 'Smiths'},
-  NNS: {pos: 'Noun, plural', ex: 'dogs'},
-  POS: {pos: 'Possessive ending', ex: 's'},
-  PDT: {pos: 'Predeterminer ', ex: 'all, both'},
-  'PP\'': {pos: 'Possessive pronoun', ex: 'my,ones'},
-  PRP: {pos: 'Personal pronoun', ex: 'I, you, she'},
-  RB: {pos: 'Adverb', ex: 'quickly'},
-  RBR: {pos: 'Adverb, comparative', ex: 'faster'},
-  RBS: {pos: 'Adverb, superlative', ex: 'fastest'},
-  RP: {pos: 'Particle', ex: 'up, off'},
-  SYM: {pos: 'Symbol', ex: '+, %, &'},
-  TO: {pos: '�to�', ex: 'to'},
-  UH: {pos: 'Interjection', ex: 'oh, oops'},
-  VB: {pos: 'verb, base form', ex: 'eat',},
-  VBD: {pos: 'verb, past tense', ex: 'ate'},
-  VBG: {pos: 'verb, gerund', ex: 'eating'},
-  VBN: {pos: 'verb, past', ex: 'eaten'},
-  VBP: {pos: 'Verb, present', ex: 'eat'},
-  VBZ: {pos: 'Verb, present', ex: 'eats'},
-  WDT: {pos: 'Wh - determiner', ex: ' which, that'},
-  WP: {pos: 'Wh pronoun', ex: 'who, what'},
-  'WP\'': {pos: 'Possessive-Wh', ex: 'whose'},
-  WRB: {pos: 'Wh - adverb', ex: 'how, where'},
-  OTHERS: {pos: 'Others', ex: '. , ) ('}
-};
+

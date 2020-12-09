@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 
 import * as helpers from './resources/helpers';
 
-import {getResult, getTexts, getTaggedTexts} from './resources/resources';
+import {getResult, getTexts, getTaggedTexts, loadTexts} from './resources/resources';
 
 import {HighlightWithinTextarea} from 'react-highlight-within-textarea'
 
@@ -15,6 +15,7 @@ function App() {
 
   const [wordOrder, setWordOrder] = useState(1);
   const [freqOrder, setFreqOrder] = useState(1);
+  const [tagOrder, setTagOrder] = useState(1);
 
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,8 @@ function App() {
   const [highlight, setHighlight] = useState('');
   const [word, setWord] = useState([]);
   const [tag, setTag] = useState('');
+
+  const [tags, setTags] = useState(helpers.tags);
 
   const hello = (e) => {
     e.preventDefault();
@@ -62,11 +65,24 @@ function App() {
     setTexts(data.data.texts);
     setText(data.data.texts[0]);
 
-    const data1 = await getTaggedTexts();
-    setTaggedTexts(data1.data.taggedTexts);
+    // const data1 = await getTaggedTexts();
+    // setTaggedTexts(data1.data.taggedTexts);
 
     setLoading(false);
   }, []);
+
+  const loadMore = async () => {
+    setLoading(true);
+
+    const loadData = await loadTexts();
+    setTexts(loadData.data.texts);
+    setText(loadData.data.texts[0]);
+
+    const loadData1 = await getTaggedTexts();
+    setTaggedTexts(loadData1.data.taggedTexts);
+
+    setLoading(false);
+  }
 
   const onAddTag = () => {
     if (word.includes(tag)) {
@@ -100,6 +116,11 @@ function App() {
   const sortByWord = () => {
     setWords(helpers.getSortedWords(words, wordOrder));
     setWordOrder(wordOrder === 1 ? -1 : 1);
+  }
+
+  const sortByTags = () => {
+    setWords(helpers.getSortedWordsByTags(words, tagOrder));
+    setTagOrder(tagOrder === 1 ? -1 : 1);
   }
 
   const onSave = () => {
@@ -208,7 +229,9 @@ function App() {
         </div>
         <div className='column'>
           {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
-          <div className="div">There are {texts.length} texts. Please enter text number</div>
+          {texts.length === 0
+            ? <button className="save" onClick={loadMore}>Load texts</button>
+            : <div className="div">There are {texts.length} texts. Please enter text number</div>}
           <input
             value={selectedText + 1 || ''}
             onChange={onTextChange}
@@ -226,11 +249,13 @@ function App() {
         <div className='column'>
           <button onClick={onReload} className='save'>Reload</button>
           <button className="save" onClick={onAdd}>Add word</button>
+          <button onClick={showInfo} className='save'>Show tags info</button>
           <ul className='words'>
             <div className='word'>
               <div className='sort' onClick={sortByWord}><b>Word</b></div>
               <div className='sort' onClick={sortByFreq}><b>Frequency</b></div>
-              <div className='sort' onClick={showInfo}><b>Tags</b></div>
+              <div className='sort' onClick={sortByTags}><b>Tags</b></div>
+              {/*<div className='sort' onClick={showInfo}><b>Tags</b></div>*/}
               <div className='block'><b>Lemma</b></div>
               <div className='block'><b>Edit</b></div>
               <div className='block'><b>Delete</b></div>
@@ -312,7 +337,7 @@ function App() {
               onChange={(e) => setNewWord(e.target.value)}
               className="marginBottom"
             />
-            <div className="marginBottom">Edit tag</div>
+            <div className="marginBottom">Edit lemmas tag</div>
             <input
               value={tag || ''}
               onChange={(e) => setTag(e.target.value)}
@@ -385,49 +410,18 @@ function App() {
           className="modal"
         >
           <pre>
-            <div>CD Cardinal number          one,two</div>
-            <div>DT Determiner               the,some</div>
-            <div>EX Existential there        there</div>
-            <div>FW Foreign Word             mon dieu</div>
-            <div>IN Preposition              of,in,by</div>
-            <div>JJ Adjective                big</div>
-            <div>JJR Adj., comparative       bigger</div>
-            <div>JJS Adj., superlative       biggest</div>
-            <div>LS List item marker         1,One</div>
-            <div>MD Modal                    can,should</div>
-            <div>NN Noun, sing. or mass      dog</div>
-            <div>NNP Proper noun, sing.      Edinburgh</div>
-            <div>NNPS Proper noun, plural    Smiths</div>
-            <div>NNS Noun, plural            dogs</div>
-            <div>POS Possessive ending       's</div>
-            <div>PDT Predeterminer           all, both</div>
-            <div>PP' Possessive pronoun      my,one's</div>
-            <div>PRP Personal pronoun         I,you,she</div>
-            <div>RB Adverb                   quickly</div>
-            <div>RBR Adverb, comparative     faster</div>
-            <div>RBS Adverb, superlative     fastest</div>
-            <div>RP Particle                 up,off</div>
-            <div>SYM Symbol                  +,%,&</div>
-            <div>TO �to�                     to</div>
-            <div>UH Interjection             oh, oops</div>
-            <div>VB verb, base form          eat</div>
-            <div>VBD verb, past tense        ate</div>
-            <div>VBG verb, gerund            eating</div>
-            <div>VBN verb, past part         eaten</div>
-            <div>VBP Verb, present           eat</div>
-            <div>VBZ Verb, present           eats</div>
-            <div>WDT Wh-determiner           which,that</div>
-            <div>WP Wh pronoun               who,what</div>
-            <div>WP' Possessive-Wh           whose</div>
-            <div>WRB Wh-adverb               how,where</div>
-            <div>, Comma                     ,</div>
-            <div>. Sent-final punct          . ! ?</div>
-            <div>: Mid-sent punct.           : ; '</div>
-            <div>$ Dollar sign               $</div>
-            <div># Pound sign                #</div>
-            <div>" quote                     "</div>
-            <div>( Left paren                (</div>
-            <div>) Right paren               )</div>
+            {Object.keys(tags).map(t => {
+              return (
+              <div className="words">
+                <div className='word'>
+                  <div className='block'>{t}</div>
+                  <div className='block'>{tags[t].pos}</div>
+                  <div className='block'>{tags[t].ex}</div>
+                  <div className='block'>{tags[t].freq}</div>
+                </div>
+              </div>
+              );
+            })}
           </pre>
         </ModalWindow>
       )
