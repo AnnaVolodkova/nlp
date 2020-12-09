@@ -7,6 +7,10 @@ export const getResult = () => {
 };
 
 export const getTexts = () => {
+  return axios.get(`http://localhost:${PORT}/textsZero`);
+};
+
+export const loadTexts = () => {
   return axios.get(`http://localhost:${PORT}/texts`);
 };
 
