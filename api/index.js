@@ -95,22 +95,5 @@ app
 
 app.listen(3012);
 
-// const tags = new Tag(["who"])
-//   .initial() // initial dictionary and pattern based tagging
-//   .smooth() // further context based smoothing
-//   .tags;
-// ["DT","VBZ","PRP$","NN"]
-
-// const words = new pos.Lexer().lex(fs.readFileSync(`texts/1.txt`).toString());
-// const tags = new pos.Tagger()
-//   .tag(words)
-//   .map(tag => {
-//     console.log('tag', tag);
-//     return tag[0] + '/' + tag[1]
-//   })
-//   .join(' ');
-
-// const smth = new pos.Tagger().tag(["hello"]);
-// console.log(smth[0][1]);
 
 

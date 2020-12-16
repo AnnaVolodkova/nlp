@@ -40,6 +40,29 @@ function App() {
 
   const [tags, setTags] = useState(helpers.tags);
 
+  const [matrix, setMatrix] = useState(helpers.matrix);
+
+  const [query, setQuery] = useState('');
+
+  const searchQuery = () => {
+    const textsNumbers = helpers.getQueryTexts(query, texts);
+    setNotes(textsNumbers);
+  }
+
+  const renderMatrix = () => {
+    return (
+      <table>
+        {matrix.map((row, i) => (
+          <tr key={i} style={{ width: '20px', height: '20px' }}>
+            {row.map((col, j) => (
+              <td key={j}>{col}</td>
+            ))}
+          </tr>
+        ))}
+      </table>
+    );
+  };
+
   const hello = (e) => {
     e.preventDefault();
     setSelectedWord(window.getSelection().toString());
@@ -228,7 +251,13 @@ function App() {
           <button onClick={onSaveTaggedText} className='save'>Save</button>
         </div>
         <div className='column'>
-          {notes.length > 0 && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
+          {notes.length > 0 && !query && <div className="div">You can fix word in texts {helpers.getStringFromArr(notes)}</div>}
+          <input
+            value={query || ''}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {notes.length > 0 && query && <div className="div">This word can be find in texts {helpers.getStringFromArr(notes)}</div>}
+          <button className="save" onClick={searchQuery}>Search</button>
           {texts.length === 0
             ? <button className="save" onClick={loadMore}>Load texts</button>
             : <div className="div">There are {texts.length} texts. Please enter text number</div>}
@@ -423,6 +452,7 @@ function App() {
               );
             })}
           </pre>
+          {renderMatrix()}
         </ModalWindow>
       )
       }

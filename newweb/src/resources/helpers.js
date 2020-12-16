@@ -1,6 +1,7 @@
 import React from 'react';
 import pos from 'pos';
 import extract from 'extract-lemmatized-nonstop-words';
+import simpleSearch from '@matthewlam.js/json-tf-idf';
 
 export const tags = {
   CD: {pos: 'Cardinal number', ex: 'one, two', freq: 0},
@@ -41,6 +42,32 @@ export const tags = {
   OTHERS: {pos: 'Others', ex: '. , ) (', freq: 0}
 };
 
+const tagsArr = ['', ...Object.keys(tags)];
+
+const AMOUNT_TAGS = 36;
+export const matrix = [];
+matrix[0] = tagsArr;
+for (let i = 0; i <= AMOUNT_TAGS; i++) {
+  if (i !== 0) matrix[i] = [];
+  for (let j = 0; j <= AMOUNT_TAGS; j++) {
+    if (j !== 0 && i !== 0) {
+      matrix[i][j] = 0;
+    }
+    if (j === 0) matrix[i][j] = tagsArr[i];
+  }
+}
+
+const getTextsObj = (texts) => {
+  return texts.map((t, i) => ({ name: i, text: t }));
+};
+
+export const getQueryTexts = (query, texts) => {
+  // console.log('texts', getTextsObj(texts));
+  // console.log('res', simpleSearch(query, getTextsObj(texts)));
+  console.log(simpleSearch(query, getTextsObj(texts)).map(i => i.name));
+  return simpleSearch(query, getTextsObj(texts)).map(i => i.name);
+};
+
 export const getSortedWords = (words, boolean = 1) => {
   const sorted = [];
   words.sort((a, b) => (a[0] !== b[0]) ? (a[0] < b[0]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sorted.push(i));
@@ -56,7 +83,7 @@ export const getSortedWordsByFreq = (words, boolean = 1) => {
 export const getSortedWordsByTags = (words, boolean = 1) => {
   const sortedTags = [];
 
-  words.sort((a, b) => (a[a.length - 1] !== b[b.length - 1]) ?  (a[a.length - 1] < b[b.length - 1]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sortedTags.push(i));
+  words.sort((a, b) => (a[a.length - 1] !== b[b.length - 1]) ? (a[a.length - 1] < b[b.length - 1]) ? ((-1) * boolean) : (1) * boolean : 0).forEach((i) => sortedTags.push(i));
   return sortedTags;
 }
 
@@ -86,7 +113,7 @@ export const _getWords = (result) => {
     const newTag = `${tag}_${random}`;
     const newPos = `${POS}_${i[1] - random}`;
 
-    return [...i, lemma, (POS && POS !== tag) ? newPos : '', (POS && POS !== tag) ? newTag : `${tag}_${i[1]}` ];
+    return [...i, lemma, (POS && POS !== tag) ? newPos : '', (POS && POS !== tag) ? newTag : `${tag}_${i[1]}`];
   });
 
   return arr;
@@ -102,6 +129,8 @@ export const getWords = (text) => {
   const arr = text.replace(/[\n\r]/g, ' ').split(' ');
 
   const result = {};
+  let a = '';
+  let b = '';
 
   arr.forEach((item) => {
     const letters = item.split('');
@@ -118,8 +147,30 @@ export const getWords = (text) => {
       end++;
     }
     const word = letters.join('').substr(start, letters.length - start - end + 1).toLowerCase().trim();
-    if (word)
+    if (word) {
       result[word] = result[word] + 1 || 1;
+      const arr = new pos.Tagger().tag([word]);
+      const tag = arr[0][1];
+      if (!a) {
+        a = tag;
+      } else if (!b) {
+        b = tag;
+        const i = tagsArr.findIndex(tag => tag === a);
+        const j = tagsArr.findIndex(tag => tag === b);
+        if (i !== -1 && j !== -1) {
+          matrix[i][j] += 1;
+        }
+      } else {
+        a = b;
+        b = tag;
+
+        const i = tagsArr.findIndex(tag => tag === a);
+        const j = tagsArr.findIndex(tag => tag === b);
+        if (i !== -1 && j !== -1) {
+          matrix[i][j] += 1;
+        }
+      }
+    }
   })
 
   return _getWords(result);
